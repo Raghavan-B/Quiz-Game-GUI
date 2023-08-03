@@ -16,15 +16,16 @@ class QuizInterface:
 
         self.canvas = Canvas(width=300,height=250,bg="white")
         self.question_text = self.canvas.create_text(150,125,text = "Sample",fill = THEME_COLOR,font=("Arial",20,"italic"),width=260)
+
         self.canvas.grid(row = 1,column=0,columnspan=2,pady=50)
 
         right_key_img = PhotoImage(file = "images/true.png")
         
-        self.true_key = Button(image=right_key_img,highlightthickness=0)
+        self.true_key = Button(image=right_key_img,highlightthickness=0,command=self.correct_ans)
         self.true_key.grid(row=2,column=0)
 
         wrong_key_img = PhotoImage(file = "images/false.png")
-        self.false_img = Button(image=wrong_key_img,highlightthickness=0)
+        self.false_img = Button(image=wrong_key_img,highlightthickness=0,command=self.wrong_ans)
         self.false_img.grid(row =2,column=1)
 
         self.get_next_question()        
@@ -38,6 +39,27 @@ class QuizInterface:
         self.window.mainloop()
 
     def get_next_question(self):
-            q_text = self.quiz.next_question()
-            self.canvas.itemconfig(self.question_text,text =q_text)
+            self.canvas.config(bg = "white")
+            if self.quiz.still_has_questions():
+                self.score_label.config(text  = f"Score: {self.quiz.score}")
+                q_text = self.quiz.next_question()
+                self.canvas.itemconfig(self.question_text,text =q_text)
+            else: 
+                self.canvas.itemconfig(self.question_text,text  = "You've reached the end of the game")   
+                self.true_key.config(state = "disabled")
+                self.false_img.config(state = "disabled")
+    def correct_ans(self):
+        is_right = self.quiz.check_answer("True")
+        self.give_feedback(is_right)
+
+    def wrong_ans(self):
+        is_right = self.quiz.check_answer("False")
+        self.give_feedback(is_right) 
     
+    def give_feedback(self,is_right):
+        if is_right:
+            self.canvas.config(bg = "green")
+        else:
+            self.canvas.config(bg ="red")
+        self.window.after(1000,self.get_next_question)
+         
